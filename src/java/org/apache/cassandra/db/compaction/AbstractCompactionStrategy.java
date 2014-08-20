@@ -17,6 +17,7 @@
  */
 package org.apache.cassandra.db.compaction;
 
+import java.nio.ByteBuffer;
 import java.util.*;
 
 import com.google.common.util.concurrent.RateLimiter;
@@ -197,18 +198,37 @@ public abstract class AbstractCompactionStrategy
                 // we have too few samples to estimate correct percentage
                 return false;
             }
-            // first, calculate estimated keys that do not overlap
-            long keys = sstable.estimatedKeys();
-            Set<Range<Token>> ranges = new HashSet<Range<Token>>();
-            for (SSTableReader overlap : overlaps)
-                ranges.add(new Range<Token>(overlap.first.token, overlap.last.token, overlap.partitioner));
-            long remainingKeys = keys - sstable.estimatedKeysForRanges(ranges);
-            // next, calculate what percentage of columns we have within those keys
-            long columns = sstable.getEstimatedColumnCount().mean() * remainingKeys;
-            double remainingColumnsRatio = ((double) columns) / (sstable.getEstimatedColumnCount().count() * sstable.getEstimatedColumnCount().mean());
 
-            // return if we still expect to have droppable tombstones in rest of columns
-            return remainingColumnsRatio * droppableRatio > tombstoneThreshold;
+            int presentKeys = 0;
+            for (byte[] keySample : sstable.getKeySamples()) {
+                final ByteBuffer key = ByteBuffer.wrap(keySample);
+                for (SSTableReader overlap : overlaps) {
+                    if (overlap.getMinTimestamp() <= sstable.getMaxTimestamp() && overlap.getBloomFilter().isPresent(key)) {
+                        presentKeys++;
+                        break;
+                    }
+                }
+            }
+
+            final double overlapEstimate = presentKeys / ((double) sstable.getKeySamples().length);
+            final double compensatedDropRatio = droppableRatio * (1.0 - overlapEstimate);
+
+            if (compensatedDropRatio > tombstoneThreshold) {
+                logger.debug("Worth dropping tombstones for {} with ratio {} - overlap is {} giving compensated overlap ratio of {}", new Object[] {
+                    sstable.getFilename(),
+                    droppableRatio,
+                    overlapEstimate,
+                    compensatedDropRatio});
+                return true;
+            }
+            else {
+                logger.debug("Not worth dropping tombstones for {} with ratio {} - overlap is {} giving compensated overlap ratio of {}", new Object[] {
+                    sstable.getFilename(),
+                    droppableRatio,
+                    overlapEstimate,
+                    compensatedDropRatio});
+                return false;
+            }
         }
     }
 
