@@ -214,7 +214,7 @@ public abstract class AbstractCompactionStrategy
             final double compensatedDropRatio = droppableRatio * (1.0 - overlapEstimate);
 
             if (compensatedDropRatio > tombstoneThreshold) {
-                logger.info("Worth dropping tombstones for {} with ratio {} - overlap is {} giving compensated overlap ratio of {}", new Object[] {
+                logger.debug("Worth dropping tombstones for {} with ratio {} - overlap is {} giving compensated overlap ratio of {}", new Object[] {
                     sstable.getFilename(),
                     droppableRatio,
                     overlapEstimate,
@@ -222,7 +222,7 @@ public abstract class AbstractCompactionStrategy
                 return true;
             }
             else {
-                logger.info("Not worth dropping tombstones for {} with ratio {} - overlap is {} giving compensated overlap ratio of {}", new Object[] {
+                logger.debug("Not worth dropping tombstones for {} with ratio {} - overlap is {} giving compensated overlap ratio of {}", new Object[] {
                     sstable.getFilename(),
                     droppableRatio,
                     overlapEstimate,
