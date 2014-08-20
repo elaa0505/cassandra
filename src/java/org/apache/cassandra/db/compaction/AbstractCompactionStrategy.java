@@ -17,6 +17,7 @@
  */
 package org.apache.cassandra.db.compaction;
 
+import java.nio.ByteBuffer;
 import java.util.*;
 
 import com.google.common.util.concurrent.RateLimiter;
@@ -209,7 +210,7 @@ public abstract class AbstractCompactionStrategy
                 }
             }
 
-            final double overlapEstimate = presentKeys / ((double) keySampleCount);
+            final double overlapEstimate = presentKeys / ((double) sstable.getKeySamples().length);
             final double compensatedDropRatio = droppableRatio * (1.0 - overlapEstimate);
 
             if (compensatedDropRatio > tombstoneThreshold) {
