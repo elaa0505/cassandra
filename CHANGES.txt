@@ -1,4 +1,7 @@
 1.2.19
+ * Don't index tombstones (CASSANDRA-7828)
+ * Don't allow compacted sstables to be marked as compacting (CASSANDRA-7145)
+ * Track expired tombstones (CASSANDRA-7810)
  * Validate empty cell names from counter updates (CASSANDRA-7798)
  * Improve PasswordAuthenticator default super user setup (CASSANDRA-7788)
  * Remove duplicates from StorageService.getJoiningNodes (CASSANDRA-7478)
@@ -11,6 +14,7 @@
    are thrown while handling native protocol messages (CASSANDRA-7470)
  * Fix row size miscalculation in LazilyCompactedRow (CASSANDRA-7543)
  * Fix race in background compaction check (CASSANDRA-7745)
+ * Don't clear out range tombstones during compaction (CASSANDRA-7808)
 
 
 1.2.18
