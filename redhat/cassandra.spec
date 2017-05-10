@@ -135,8 +135,8 @@ exit 0
 %attr(755,%{username},%{username}) %config(noreplace) /var/lib/%{username}/*
 %attr(755,%{username},%{username}) /var/log/%{username}*
 %attr(755,%{username},%{username}) /var/run/%{username}*
-/usr/lib/python2.7/site-packages/cqlshlib/
-/usr/lib/python2.7/site-packages/cassandra_pylib*.egg-info
+/usr/local/lib/python2.7/site-packages/cqlshlib/
+/usr/local/lib/python2.7/site-packages/cassandra_pylib*.egg-info
 
 %post
 alternatives --install /%{_sysconfdir}/%{username}/conf %{username} /%{_sysconfdir}/%{username}/default.conf/ 0
